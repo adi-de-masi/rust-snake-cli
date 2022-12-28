@@ -1,4 +1,4 @@
-use console::{Key, Term};
+use console::Key;
 pub struct Snake {
     pub coords: Vec<(i32, i32)>,
 }
@@ -10,34 +10,34 @@ impl Snake {
         };
     }
     pub fn _move(&mut self, key: Key) {
-        match key {
-            Key::ArrowLeft => {
-                if let Some(last) = self.coords.pop() {
-                    self.coords.push(last);
-                    self.coords.push((last.0, last.1 - 1));
-                }
-            }
-            Key::ArrowRight => {
-                if let Some(last) = self.coords.pop() {
-                    self.coords.push(last);
-                    self.coords.push((last.0, last.1 + 1));
-                }
-            }
-            Key::ArrowUp => {
-                if let Some(last) = self.coords.pop() {
-                    self.coords.push(last);
-                    self.coords.push((last.0 - 1, last.1));
-                }
-            }
-            Key::ArrowDown => {
-                if let Some(last) = self.coords.pop() {
-                    self.coords.push(last);
-                    self.coords.push((last.0 + 1, last.1));
-                }
-            }
-            _ => (),
+        let next = self.next_coord(key);
+        match next {
+            Some(next) => self.coords.push(next),
+            None => (),
         }
     }
+    pub fn next_coord(&mut self, direction: Key) -> Option<(i32, i32)> {
+        if let Some(last) = self.coords.pop() {
+            self.coords.push(last);
+            match direction {
+                Key::ArrowLeft => {
+                    return Some((last.0, last.1 - 1));
+                }
+                Key::ArrowRight => {
+                    return Some((last.0, last.1 + 1));
+                }
+                Key::ArrowUp => {
+                    return Some((last.0 - 1, last.1));
+                }
+                Key::ArrowDown => {
+                    return Some((last.0 + 1, last.1));
+                }
+                _ => return None,
+            }
+        }
+        return None;
+    }
+
     pub fn is_occupied(&self, pos: (i32, i32)) -> bool {
         let test = self
             .coords
@@ -81,12 +81,12 @@ mod tests {
     }
     #[test]
     fn is_occupied() {
-        let mut snake = crate::snake::Snake::new((2, 2));
-        assert!(snake.is_occupied((2,2)));
+        let snake = crate::snake::Snake::new((2, 2));
+        assert!(snake.is_occupied((2, 2)));
     }
     #[test]
     fn is_not_occupied() {
-        let mut snake = crate::snake::Snake::new((2, 2));
-        assert_eq!(false, snake.is_occupied((1,1)));
+        let snake = crate::snake::Snake::new((2, 2));
+        assert_eq!(false, snake.is_occupied((1, 1)));
     }
 }
