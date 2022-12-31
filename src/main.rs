@@ -1,8 +1,10 @@
+mod snake;
+mod board;
 use console::{Key, Term};
 use std::fmt;
 use std::fmt::Debug;
-mod snake;
 use crate::snake::Snake;
+use crate::board::Board;
 
 fn main() {
     let stdout = Term::buffered_stdout();
@@ -15,7 +17,7 @@ fn main() {
             match collisions {
                 Ok(()) => {
                     snake = snake.move_to(&key);
-                    repaint_board(&snake, &board);
+                    board.repaint(&snake);
                 }
                 Err(collision_error) => {
                     println!(
@@ -53,49 +55,3 @@ fn assert_no_collision(snake: &Snake, board: &Board, key: &Key) -> Result<(), Co
     return Ok(());
 }
 
-struct Board {
-    width: i32,
-    height: i32,
-}
-
-impl Board {
-    fn new(width: i32, height: i32) -> Self {
-        Board { width, height }
-    }
-    fn is_border(&self, pos: (i32, i32)) -> bool {
-        return self.height == pos.0 || self.width == pos.1 || pos.0 == 0 || pos.1 == 0;
-    }
-}
-
-fn repaint_board(snake: &Snake, board: &Board) {
-    clear_board();
-    print_horizontal_border(board);
-    let mut i = 0;
-    while i < board.height {
-        let mut j = 0;
-        print!("X");
-        while j < board.width {
-            if snake.is_occupied((i, j)) {
-                print!("*");
-            } else {
-                print!(" ");
-            }
-            j = j + 1;
-        }
-        print!("X\n");
-        i = i + 1;
-    }
-    print_horizontal_border(board);
-}
-
-fn clear_board() {
-    print!("{}[2J", 27 as char);
-}
-
-fn print_horizontal_border(board: &Board) {
-    print!(" ");
-    (0..board.width).for_each(|_| {
-        print!("X");
-    });
-    print!("\n");
-}
