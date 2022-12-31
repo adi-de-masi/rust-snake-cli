@@ -1,4 +1,5 @@
 use console::Key;
+
 pub struct Snake {
     pub coords: Vec<(i32, i32)>,
 }

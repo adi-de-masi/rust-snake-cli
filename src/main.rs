@@ -1,4 +1,6 @@
-use console::Term;
+use console::{Key, Term};
+use std::fmt;
+use std::fmt::Debug;
 mod snake;
 use crate::snake::Snake;
 
@@ -9,12 +11,47 @@ fn main() {
 
     loop {
         if let Ok(key) = stdout.read_key() {
-            snake._move(key);
-            repaint_board(&snake, &board);
+            let collisions = assert_no_collision(&snake, &board, &key);
+            match collisions {
+                Ok(()) => {
+                    snake = snake.move_to(&key);
+                    repaint_board(&snake, &board);
+                }
+                Err(collision_error) => {
+                    println!(
+                        "collosion occurred at {}/{}",
+                        collision_error.coords.0, collision_error.coords.1
+                    );
+                    break;
+                }
+            }
         }
     }
 }
 
+#[derive(Debug)]
+struct CollisionError {
+    coords: (i32, i32),
+}
+
+impl fmt::Display for CollisionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "x: {}, y: {}", self.coords.0, self.coords.1)
+    }
+}
+
+fn assert_no_collision(snake: &Snake, board: &Board, key: &Key) -> Result<(), CollisionError> {
+    let next_pos = snake.next_coord(key);
+    match next_pos {
+        Some(next_pos) => {
+            if snake.is_occupied(next_pos) || board.is_border(next_pos) {
+                return Err(CollisionError { coords: next_pos });
+            }
+        }
+        None => (),
+    }
+    return Ok(());
+}
 
 struct Board {
     width: i32,
@@ -24,6 +61,9 @@ struct Board {
 impl Board {
     fn new(width: i32, height: i32) -> Self {
         Board { width, height }
+    }
+    fn is_border(&self, pos: (i32, i32)) -> bool {
+        return self.height == pos.0 || self.width == pos.1 || pos.0 == 0 || pos.1 == 0;
     }
 }
 
