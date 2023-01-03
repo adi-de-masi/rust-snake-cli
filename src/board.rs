@@ -1,32 +1,84 @@
 use crate::snake::Snake;
+use crate::CollisionError;
 use crate::Coords;
+use console::Key;
+use rand::Rng;
 
 pub struct Board {
     pub width: i32,
     pub height: i32,
-    pub food: Coords,
+    food: Coords,
+    snake: Snake,
 }
 
 impl Board {
-    pub fn new(dimensions: Coords, food: Option<Coords>) -> Self {
+    pub fn new(dimensions: Coords) -> Self {
         Board {
             width: dimensions.width,
             height: dimensions.height,
-            food: food.unwrap_or(Coords {
-                width: 0,
-                height: 0,
+            food: random_field_in_borders(dimensions),
+            snake: Snake::new(Coords {
+                width: 1,
+                height: 1,
             }),
         }
     }
 
-    pub fn is_border(&self, pos: Coords) -> bool {
+    pub fn next(mut self, key: &Key) -> Result<Board, CollisionError> {
+        self.assert_no_collision(&key)?;
+        if let Some(next_coords) = self.snake.next_coord(&key) {
+            if self.is_food(next_coords) {
+                self.snake = self.snake.move_to(&key, true);
+                self.food = self.next_food();
+            } else {
+                self.snake = self.snake.move_to(&key, false);
+            }
+        }
+        self.paint();
+        return Ok(self);
+    }
+
+    fn next_food(&self) -> Coords {
+        let borders = Coords {
+            width: self.width,
+            height: self.height,
+        };
+        let mut food_field = random_field_in_borders(borders);
+        while self.snake.is_occupied(food_field) {
+            food_field = random_field_in_borders(borders);
+        }
+        return food_field;
+    }
+
+    fn assert_no_collision(&self, key: &Key) -> Result<(), CollisionError> {
+        let next_pos = self.snake.next_coord(key);
+        match next_pos {
+            Some(next_pos) => {
+                if self.snake.is_occupied(next_pos) {
+                    return Err(CollisionError::new(
+                        next_pos,
+                        String::from("You ate yourself"),
+                    ));
+                } else if self.is_border(next_pos) {
+                    return Err(CollisionError::new(
+                        next_pos,
+                        String::from("You hit the border"),
+                    ));
+                }
+            }
+            None => (),
+        }
+        return Ok(());
+    }
+
+    fn is_border(&self, pos: Coords) -> bool {
         return self.height == pos.height
             || self.width == pos.width
             || pos.width == 0
             || pos.height == 0;
     }
 
-    pub fn paint_next(&self, snake: &Snake) {
+    fn paint(&self) {
         clear();
         println!("food: w={}/h={}", self.food.width, self.food.height);
         self.print_horizontal_border();
@@ -35,9 +87,9 @@ impl Board {
             let mut width = 0;
             print!("X");
             while width < self.width {
-                if snake.is_occupied(Coords { width, height }) {
+                if self.snake.is_occupied(Coords { width, height }) {
                     print!("*");
-                } else if self.is_food(Coords { width, height}) {
+                } else if self.is_food(Coords { width, height }) {
                     print!("o");
                 } else {
                     print!(" ");
@@ -65,4 +117,14 @@ impl Board {
 
 fn clear() {
     print!("{}[2J", 27 as char);
+}
+
+fn random_field_in_borders(dimensions: Coords) -> Coords {
+    let mut rng = rand::thread_rng();
+    let x = rng.gen_range(1..(dimensions.height - 1));
+    let y = rng.gen_range(1..(dimensions.width - 1));
+    return Coords {
+        width: y,
+        height: x,
+    };
 }
