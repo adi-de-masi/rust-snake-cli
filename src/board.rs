@@ -1,16 +1,29 @@
 use crate::snake::Snake;
+use crate::Coords;
 
 pub struct Board {
-    width: i32,
-    height: i32,
+    pub width: i32,
+    pub height: i32,
+    pub food: Coords,
 }
 
 impl Board {
-    pub fn new(width: i32, height: i32) -> Self {
-        Board { width, height }
+    pub fn new(dimensions: Coords, food: Option<Coords>) -> Self {
+        Board {
+            width: dimensions.width,
+            height: dimensions.height,
+            food: food.unwrap_or(Coords {
+                width: 0,
+                height: 0,
+            }),
+        }
     }
-    pub fn is_border(&self, pos: (i32, i32)) -> bool {
-        return self.height == pos.0 || self.width == pos.1 || pos.0 == 0 || pos.1 == 0;
+
+    pub fn is_border(&self, pos: Coords) -> bool {
+        return self.height == pos.height
+            || self.width == pos.width
+            || pos.width == 0
+            || pos.height == 0;
     }
     pub fn repaint(&self, snake: &Snake) {
         clear();
