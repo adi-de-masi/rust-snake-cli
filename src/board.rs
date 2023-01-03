@@ -28,10 +28,10 @@ impl Board {
         self.assert_no_collision(&key)?;
         if let Some(next_coords) = self.snake.next_coord(&key) {
             if self.is_food(next_coords) {
-                self.snake = self.snake.move_to(&key, true);
+                self.snake = self.snake.eat(&key);
                 self.food = self.next_food();
             } else {
-                self.snake = self.snake.move_to(&key, false);
+                self.snake = self.snake.move_to(&key);
             }
         }
         self.paint();

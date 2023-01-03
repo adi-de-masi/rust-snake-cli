@@ -11,7 +11,15 @@ impl Snake {
             coords: vec![(start_pos)],
         };
     }
-    pub fn move_to(&self, key: &Key, is_food: bool) -> Snake {
+
+    pub fn move_to(&self, key: &Key) -> Snake {
+        self._move_to(key, false)
+    }
+
+    pub fn eat(&self, key: &Key) -> Snake {
+        self._move_to(key, true)
+    }
+    fn _move_to(&self, key: &Key, is_food: bool) -> Snake {
         let mut snake_coords = self.coords.clone();
         let next = self.next_coord(key);
         match next {
@@ -62,10 +70,9 @@ impl Snake {
     }
 
     pub fn is_occupied(&self, coords: Coords) -> bool {
-        let test = self
-            .coords
-            .iter()
-            .find(|&current_coord| current_coord.height == coords.height && current_coord.width == coords.width);
+        let test = self.coords.iter().find(|&current_coord| {
+            current_coord.height == coords.height && current_coord.width == coords.width
+        });
         return test != None;
     }
 }
@@ -90,7 +97,7 @@ mod tests {
             height: 2,
         };
         let mut snake = crate::snake::Snake::new(coords);
-        snake = snake.move_to(&Key::ArrowLeft, false);
+        snake = snake._move_to(&Key::ArrowLeft, false);
         assert_eq!(
             vec!(Coords {
                 width: 1,
@@ -106,7 +113,7 @@ mod tests {
             height: 2,
         };
         let mut snake = crate::snake::Snake::new(coords);
-        snake = snake.move_to(&Key::ArrowRight, false);
+        snake = snake._move_to(&Key::ArrowRight, false);
         assert_eq!(
             vec!(Coords {
                 width: 3,
@@ -122,7 +129,7 @@ mod tests {
             height: 2,
         };
         let mut snake = crate::snake::Snake::new(coords);
-        snake = snake.move_to(&Key::ArrowUp, false);
+        snake = snake._move_to(&Key::ArrowUp, false);
         assert_eq!(
             vec!(Coords {
                 width: 2,
@@ -138,7 +145,7 @@ mod tests {
             height: 2,
         };
         let mut snake = crate::snake::Snake::new(coords);
-        snake = snake.move_to(&Key::ArrowDown, false);
+        snake = snake._move_to(&Key::ArrowDown, false);
         assert_eq!(
             vec!(Coords {
                 width: 2,
@@ -154,7 +161,7 @@ mod tests {
             height: 2,
         };
         let mut snake = crate::snake::Snake::new(coords);
-        snake = snake.move_to(&Key::ArrowDown, true);
+        snake = snake._move_to(&Key::ArrowDown, true);
         assert_eq!(
             vec!(
                 Coords {
@@ -185,6 +192,12 @@ mod tests {
             height: 2,
         };
         let snake = crate::snake::Snake::new(coords);
-        assert_eq!(false, snake.is_occupied(Coords {width: 1, height: 1}));
+        assert_eq!(
+            false,
+            snake.is_occupied(Coords {
+                width: 1,
+                height: 1
+            })
+        );
     }
 }
