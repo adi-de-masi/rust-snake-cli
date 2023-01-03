@@ -25,32 +25,41 @@ impl Board {
             || pos.width == 0
             || pos.height == 0;
     }
-    pub fn repaint(&self, snake: &Snake) {
+
+    pub fn paint_next(&self, snake: &Snake) {
         clear();
+        println!("food: w={}/h={}", self.food.width, self.food.height);
         self.print_horizontal_border();
-        let mut i = 0;
-        while i < self.height {
-            let mut j = 0;
+        let mut height = 0;
+        while height < self.height {
+            let mut width = 0;
             print!("X");
-            while j < self.width {
-                if snake.is_occupied((i, j)) {
+            while width < self.width {
+                if snake.is_occupied(Coords { width, height }) {
                     print!("*");
+                } else if self.is_food(Coords { width, height}) {
+                    print!("o");
                 } else {
                     print!(" ");
                 }
-                j = j + 1;
+                width = width + 1;
             }
             print!("X\n");
-            i = i + 1;
+            height = height + 1;
         }
         self.print_horizontal_border();
     }
+
     fn print_horizontal_border(&self) {
         print!(" ");
         (0..self.width).for_each(|_| {
             print!("X");
         });
         print!("\n");
+    }
+
+    pub fn is_food(&self, coords: Coords) -> bool {
+        return self.food.width == coords.width && self.food.height == coords.height;
     }
 }
 

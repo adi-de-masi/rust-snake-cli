@@ -11,13 +11,15 @@ impl Snake {
             coords: vec![(start_pos)],
         };
     }
-    pub fn move_to(&self, key: &Key) -> Snake {
+    pub fn move_to(&self, key: &Key, is_food: bool) -> Snake {
         let mut snake_coords = self.coords.clone();
         let next = self.next_coord(key);
         match next {
             Some(next) => {
                 snake_coords.push(next);
-                snake_coords.remove(0);
+                if !is_food {
+                    snake_coords.remove(0);
+                };
             }
             None => (),
         }
